@@ -1,8 +1,11 @@
+
 from cryptoManager import EncryptionFactory
 from MessageClass import Message
 from User import user
 import re
+from functions import functions
 
+f=functions()
 class sender(user):
     def __init__(self, encryption_factory: EncryptionFactory, email, password):
         encryptor_instance = encryption_factory.get_encryptor()
@@ -11,28 +14,37 @@ class sender(user):
         self.sessions = []
         self.logged_in = False
 
-    @staticmethod
-    def is_valid_email(email: str) -> bool:
-        email_regex = r"(^[A-Za-z0-9]+@[A-Za-z0-9]+\.(com|net))"
-        return re.match(email_regex, email) is not None
 
     def login(self, email, password):
-        if not self.is_valid_email(email):
-            print("Invalid email format.")
+        clean_password = f.sanitize_password(password)
+        if not f.is_valid_email(email):
+            print("Invalid email format!")
             return False
-        if self.email == email and self.password == password and self.password.strip() != "":
-            self.logged_in = True
-            return True
-        else:
-            print("Invalid email or password.")
+        if self.email != email:
+            print("Invalid email!")
+            return False
+        if clean_password.strip() == "" :
+            print("Empty password!")
+            return False
+        if self.password != clean_password :
+            print("Invalid password!")
+        if not f.is_strong_password(clean_password):
+            print("Password is not strong enough. It should include uppercase, lowercase, digits, and special characters.")
             return False
 
-    def create_message(self, content, receiver):
+        self.logged_in = True
+        return True
+
+    def create_message(self, content, receiver_email):
         if not self.logged_in:
+            print("Invalid login!")
+            return None
+        if not (f.is_valid_email(receiver_email)):
+            print("Invalid receiver_email!")
             return None
         encrypted_content = self.encryptor.encrypt(content)
-        encrypted_receiver_name = self.encryptor.encrypt(receiver)
-        signature = self.encryptor.signData(receiver)
+        encrypted_receiver_name = self.encryptor.encrypt(receiver_email)
+        signature = self.encryptor.signData(receiver_email)
         message = Message(encrypted_content, signature, encrypted_receiver_name)
         self.sessions.append(message)
         return message
@@ -42,3 +54,4 @@ class sender(user):
             return "", "", "", ""
         message = self.sessions[-1]
         return self.encryptor, message.get_encrypted_content(), message.get_signature(), message.get_receiver_username()
+

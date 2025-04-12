@@ -1,6 +1,5 @@
 from RSAEncryption import RSAEncryptor
 
-
 class EncryptionFactory:
     def __init__(self, method="RSA"):
         if method.upper() == "RSA":
