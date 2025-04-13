@@ -1,24 +1,23 @@
-
 class Message:
     def __init__(self, encrypted_content: str, signature: str, receiver_username: str = ""):
-        self.__encrypted_content = encrypted_content
-        self.__signature = signature
-        self.__receiver_username = receiver_username
+        self.__encrypted_content = encrypted_content  # Note the double underscore (private)
+        self.__signature = signature  # Note the double underscore (private)
+        self.__receiver_username = receiver_username  # Note the double underscore (private)
 
     def get_encrypted_content(self) -> str:
-        return self.encrypted_content
+        return self.__encrypted_content  # Access the private attribute with the getter
 
     def get_signature(self) -> str:
-        return self.signature
+        return self.__signature  # Access the private attribute with the getter
 
     def get_receiver_username(self) -> str:
-        return self.receiver_username
+        return self.__receiver_username  # Access the private attribute with the getter
 
     def set_encrypted_content(self, content: str):
-        self.encrypted_content = content
+        self.__encrypted_content = content  # Modify the private attribute
 
     def set_signature(self, signature: str):
-        self.signature = signature
+        self.__signature = signature  # Modify the private attribute
 
     def set_receiver_username(self, username: str):
-        self.receiver_username = username
+        self.__receiver_username = username  # Modify the private attribute

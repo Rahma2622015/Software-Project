@@ -38,7 +38,7 @@ class Server:
         signature = self.messages_queue.get()
         receiver_name = self.messages_queue.get()
 
-        receiver_url = "https://192.168.1.6:5000/receive"
+        receiver_url = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#https"
         if not self.protocol.is_secure_protocol(receiver_url):
             print("Protocol is not secure, message not sent.")
             return False
