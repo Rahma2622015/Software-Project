@@ -7,9 +7,9 @@ class receiver:
     def receiveMessage(self, encrypted_message, receiver_name, signature: bytes, encryptor) -> bool:
         if isinstance(encryptor, RSAEncryptor):
             decrypted_message = encryptor.decrypt(encrypted_message)
-
-        if encryptor.verifySignature(receiver_name, signature, encryptor.public_key):
-            print(f"Message from {receiver_name} successfully verified.")
+            decrypted_receiver = encryptor.decrypt(receiver_name)
+        if encryptor.verifySignature(decrypted_receiver, signature, encryptor.public_key):
+            print(f"[Receiver]Message successfully verified.")
             self.received_messages.append({'receiver': receiver_name, 'message': decrypted_message})
             return True
         else:
