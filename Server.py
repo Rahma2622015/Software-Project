@@ -34,7 +34,7 @@ class Server:
             signature = message_data[1]  # التوقيع
             receiver_name = message_data[2]  # اسم المستلم
 
-            receiver_url = "https://192.168.1.14:5000/receive"
+            receiver_url = "https://192.168.1.16:5000/receive"
             payload = {
                 "encrypted_content": base64.b64encode(message).decode(),
                 "sender_signature": base64.b64encode(signature).decode(),
