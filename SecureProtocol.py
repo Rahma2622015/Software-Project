@@ -16,8 +16,8 @@ class SecureProtocol(ProtocolInterface):
             return False
 
         try:
-            response = requests.post(url, data=data, headers={"Content-Type": "text/plain"})
-            print(f" Data sent securely to {url}. Status: {response.status_code}")
+            response = requests.post(url, data=data, verify="D:/Software-Project/cert.crt")
+            print(f" Data sent securely to {url}")
             return True
         except requests.exceptions.SSLError:
             print(f" SSL Error: Connection to {url} is not secure")
@@ -33,7 +33,7 @@ class SecureProtocol(ProtocolInterface):
 
         try:
             response = requests.get(url)
-            print(f" Data received securely from {url}. Status: {response.status_code}")
+            print(f" Data received securely from {url}")
             return True
         except requests.exceptions.SSLError:
             print(f" SSL Error: Connection to {url} is not secure")

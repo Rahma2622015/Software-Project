@@ -1,4 +1,5 @@
 from RSAEncryption import RSAEncryptor
+from Receiverinfocryptor import Receiverinfo
 from SecureProtocol import SecureProtocol
 from Sender import sender
 from Server import Server
@@ -32,12 +33,12 @@ def main():
     if message is None:
         print("[Sender] Failed to create message.")
         return
-
+    receiver_info = Receiverinfo(sender_user.encryptor)
     # Step 5: Simulate secure message transmission (no HTTP involved)
     secure_protocol = SecureProtocol()
 
     # Step 6: Create a server instance to receive the message
-    server = Server(secure_protocol, sender_user)
+    server = Server(secure_protocol, sender_user,receiver_info)
 
     # Step 7: Server receives and processes the encrypted message
     if server.receive_message():
@@ -45,7 +46,7 @@ def main():
 
         # ✅ Fix: instantiate the receiver before forwarding
         receiver_instance = receiver()
-        if server.forward_message(receiver_instance):
+        if server.forward_message(receiver_instance,encryptor):
             print(f"[Server] Message forwarded to {receiver_username} successfully.")
         else:
             print("[Server] Message forwarding failed.")
@@ -54,3 +55,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+    # hagerSamy$234
