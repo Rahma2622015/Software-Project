@@ -27,32 +27,72 @@ def main():
 
     # Step 4: Create and encrypt a message with content entered by the user
     receiver_username = input("Enter the receiver's email: ")
-    message_content = input("Enter your message: ")
-    message = sender_user.create_message(message_content, receiver_username)
+    original_message_content = input("Enter your message: ")
+    message = sender_user.create_message(original_message_content, receiver_username)
 
     if message is None:
         print("[Sender] Failed to create message.")
         return
+
+
     receiver_info = Receiverinfo(sender_user.encryptor)
-    # Step 5: Simulate secure message transmission (no HTTP involved)
+
+    # Step 5: Simulate secure message transmission
     secure_protocol = SecureProtocol()
 
-    # Step 6: Create a server instance to receive the message
-    server = Server(secure_protocol, sender_user,receiver_info)
+    # Step 6: Create server instance
+    server = Server(secure_protocol, sender_user, receiver_info)
 
-    # Step 7: Server receives and processes the encrypted message
+
+    # Step 7: Server receives message
     if server.receive_message():
-        print("[Server] Message received securely.")
+        print("[Server] ✅ Message received securely.")
 
-        # ✅ Fix: instantiate the receiver before forwarding
+        # 🔍 Step 7.1: Verify the integrity of the received message
+        try:
+            # Directly using the message dictionary
+            encrypted_msg = message["message"]
+            signature = message["signature"]
+            encrypted_receiver = message["receiver"]
+
+            # Decrypt the message content and the receiver
+            decrypted_message = encryptor.decrypt(encrypted_msg)
+            decrypted_receiver = encryptor.decrypt(encrypted_receiver)
+
+            print(f"[Verification] Decrypted Message: {decrypted_message}")
+            print(f"[Verification] Intended Receiver: {decrypted_receiver}")
+
+            # Check message integrity
+            if decrypted_message == original_message_content:
+                print("[Verification] ✅ Message integrity check passed. Message is intact.")
+            else:
+                print("[Verification] ❌ Message corrupted during transmission.")
+
+            # Check receiver identification
+            if decrypted_receiver == receiver_username:
+                print("[Receiver Check] ✅ Correct receiver identified.")
+            else:
+                print("[Receiver Check] ❌ Wrong receiver decrypted!")
+
+        except Exception as e:
+            print(f"[Verification] ❌ Error verifying integrity or receiver: {e}")
+            print("[Security] ⚠️ Partial decryption failed. No sensitive data leaked.")
+
+        # Step 8: Forward message to the receiver
         receiver_instance = receiver()
-        if server.forward_message(receiver_instance,encryptor):
-            print(f"[Server] Message forwarded to {receiver_username} successfully.")
+
+        if server.forward_message(receiver_instance, encryptor):
+            print(f"[Server] ✅ Message forwarded to {receiver_username} successfully.")
+
         else:
-            print("[Server] Message forwarding failed.")
+            print("[Server] ❌ Message forwarding failed.")
     else:
-        print("[Server] Failed to receive the message.")
+        print("[Server] ❌ Failed to receive the message.")
 
 if __name__ == "__main__":
     main()
-    # hagerSamy$234
+
+
+    # eman@gmail.com
+    # Ddfaser@123
+

@@ -4,6 +4,7 @@ from Sender import sender
 from RSAEncryption import RSAEncryptor
 from Receiverinfocryptor import Receiverinfo
 import base64
+from functions_for_database import functions_DB 
 
 class Server:
     def __init__(self, protocol: SecureProtocol, sender_instance: sender, receiver_info: Receiverinfo):
@@ -11,13 +12,16 @@ class Server:
         self.sender = sender_instance
         self.messages_queue = Queue()
         self.receive_info = receiver_info
-    def receive_message(self) -> bool:
-        encryptor, message, signature, receiver_name = self.sender.send_message()
-        if not encryptor or not message or not signature or not receiver_name:
-            print("No data to receive.")
-            return False
+
+        self.db = functions_DB()
 
         decrypted_receiver = self.receive_info.decryptReceiverInfo(receiver_name)
+
+
+        if not self.db. receiver_exists(decrypted_receiver):
+            print(f"[Server] Receiver '{decrypted_receiver}' not found in database.")
+            return False
+        #check receiver in database
         if encryptor.verifySignature(decrypted_receiver, signature, self.sender.getPublicKey()):
             print("[Server] Receiving message...")
             self.messages_queue.put((message, signature, receiver_name))
@@ -34,7 +38,8 @@ class Server:
             signature = message_data[1]  # التوقيع
             receiver_name = message_data[2]  # اسم المستلم
 
-            receiver_url = "https://192.168.1.16:5000/receive"
+            receiver_url = "https://192.168.1.6:5000/receive"
+
             payload = {
                 "encrypted_content": base64.b64encode(message).decode(),
                 "sender_signature": base64.b64encode(signature).decode(),
