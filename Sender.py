@@ -4,8 +4,6 @@ from MessageClass import Message
 from User import user
 import re
 from functions import functions
-from functions_for_database import functions_DB
-fun=functions_DB()
 f=functions()
 
 
@@ -15,30 +13,16 @@ class sender(user):
         super().__init__(encryptor_instance, email, password)
         self.encryptor = encryptor_instance
         self.sessions = []
-        self.logged_in = False
+        self.logged_in=False
 
 
     def login(self, email, password):
-        clean_password = f.sanitize_password(password)
-        if not f.is_valid_email(email):
-            print("Invalid email format!")
-            return False
-        if self.email != email:
-            print("Invalid email!")
-            return False
-        if clean_password.strip() == "" :
-            print("Empty password!")
-            return False
-        if self.password != clean_password :
-            print("Invalid password!")
-        if not f.is_strong_password(clean_password):
-            print("Password is not strong enough. It should include uppercase, lowercase, digits, and special characters.")
-            return False
-        #add email&pass in database
-        if fun.add_senders(email,clean_password):
+        if super().login(email, password):
+            print("Sender logged in successfully!")
             self.logged_in = True
             return True
         else:
+            print("Login failed!")
             return False
 
     def create_message(self, content, receiver_email):

@@ -1,7 +1,9 @@
+from functions_for_database import functions_DB
+fun=functions_DB()
+
 class user:
-    def __init__(self, encryptor,email,password,rsa_key=None):
+    def __init__(self, encryptor,email,password):
         self.encryptor = encryptor
-        self.rsa_key = rsa_key
         self.email=email
         self.password=password
 
@@ -11,10 +13,24 @@ class user:
         else:
             return None
 
-    def encrypt_with_rsa(self, aes_key):
-        """تشفير مفتاح AES باستخدام مفتاح RSA العام للطرف الآخر"""
-        if self.rsa_key:
-            # تشفير المفتاح السري لـ AES باستخدام RSA
-            encrypted_aes_key = self.rsa_key.encrypt(aes_key)
-            return encrypted_aes_key
-        return None
+    def login(self, email, password):
+        clean_password = f.sanitize_password(password)
+        if not f.is_valid_email(email):
+            print("Invalid email format!")
+            return False
+        if self.email != email:
+            print("Invalid email!")
+            return False
+        if clean_password.strip() == "" :
+            print("Empty password!")
+            return False
+        if self.password != clean_password :
+            print("Invalid password!")
+        if not f.is_strong_password(clean_password):
+            print("Password is not strong enough. It should include uppercase, lowercase, digits, and special characters.")
+            return False
+        #add email&pass in database
+        if fun.add_senders(email,clean_password):
+            return True
+        else:
+            return False
