@@ -34,6 +34,7 @@ def main():
         print("[Sender] Failed to create message.")
         return
 
+
     receiver_info = Receiverinfo(sender_user.encryptor)
 
     # Step 5: Simulate secure message transmission
@@ -41,6 +42,7 @@ def main():
 
     # Step 6: Create server instance
     server = Server(secure_protocol, sender_user, receiver_info)
+
 
     # Step 7: Server receives message
     if server.receive_message():
@@ -78,8 +80,10 @@ def main():
 
         # Step 8: Forward message to the receiver
         receiver_instance = receiver()
+
         if server.forward_message(receiver_instance, encryptor):
             print(f"[Server] ✅ Message forwarded to {receiver_username} successfully.")
+
         else:
             print("[Server] ❌ Message forwarding failed.")
     else:
@@ -88,5 +92,7 @@ def main():
 if __name__ == "__main__":
     main()
 
+
     # eman@gmail.com
     # Ddfaser@123
+
