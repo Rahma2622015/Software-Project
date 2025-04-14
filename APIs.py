@@ -19,7 +19,7 @@ def check_https():
     if not secure_protocol_checker.is_secure_protocol(full_url):
         return jsonify({"error": "Insecure protocol detected. Please use HTTPS."}), 403
 
-@app.route('/Login', methods=['POST'])
+@app.route('/login', methods=['POST'])
 def login():
     global sender_instance, shared_encryptor
 
