@@ -4,8 +4,11 @@ from MessageClass import Message
 from User import user
 import re
 from functions import functions
-
+from functions_for_database import functions_DB
+fun=functions_DB()
 f=functions()
+
+
 class sender(user):
     def __init__(self, encryption_factory: EncryptionFactory, email, password):
         encryptor_instance = encryption_factory.get_encryptor()
@@ -31,9 +34,12 @@ class sender(user):
         if not f.is_strong_password(clean_password):
             print("Password is not strong enough. It should include uppercase, lowercase, digits, and special characters.")
             return False
-
-        self.logged_in = True
-        return True
+        #add email&pass in database
+        if fun.add_senders(email,clean_password):
+            self.logged_in = True
+            return True
+        else:
+            return False
 
     def create_message(self, content, receiver_email):
         if not self.logged_in:
@@ -54,4 +60,5 @@ class sender(user):
             return "", "", "", ""
         message = self.sessions[-1]
         return self.encryptor, message.get_encrypted_content(), message.get_signature(), message.get_receiver_username()
+
 
