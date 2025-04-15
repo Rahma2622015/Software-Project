@@ -1,17 +1,17 @@
 from flask import Flask, request, jsonify
 from gevent.pywsgi import WSGIServer
-from Sender import sender,f
+from Sender import sender, f
 from cryptoManager import EncryptionFactory
 from Server import Server
 from Receiver import receiver
 from SecureProtocol import SecureProtocol
 from Receiverinfocryptor import Receiverinfo
-from cryptoManager import EncryptionFactory
 import base64
+
 app = Flask(__name__)
+
 users = {}
 stored_messages = {}
-
 
 sender_instance = None
 factory = EncryptionFactory(method="RSA")
@@ -28,6 +28,7 @@ def check_https():
     if not secure_protocol_checker.is_secure_protocol(full_url):
         return jsonify({"error": "Insecure protocol detected. Please use HTTPS."}), 403
 
+
 @app.route('/Login', methods=['POST'])
 def login():
     global sender_instance, server_instance
@@ -36,19 +37,15 @@ def login():
     email = data.get('email')
     password = data.get('password')
 
-    if not email :
+    if not email:
         return jsonify({"status": "Email required"}), 400
     if not password:
         return jsonify({"status": "Password required"}), 400
-    if not email:
-            return jsonify({"status": "Email required"}), 400
     if not f.is_strong_password(password):
-            return jsonify({"status": "Password should be strong"}), 400
-    if not f.is_valid_email(email) :
+        return jsonify({"status": "Password should be strong"}), 400
+    if not f.is_valid_email(email):
         return jsonify({"status": "Invalid email"}), 400
-    if not f.is_valid_email(email) and not f.is_strong_password(password):
-        return jsonify({"status": "Invalid email & weak password"}), 400
-    if  not email and not password:
+    if not email and not password:
         return jsonify({"status": "Empty email & empty password"}), 400
 
     encryption_factory = EncryptionFactory(method="RSA")
@@ -73,11 +70,14 @@ def send_message():
     if not sender_instance or not sender_instance.logged_in:
         return jsonify({"status": "User not logged in!"}), 401
 
+    if not receiver_email:
+        return jsonify({"status": "Receiver email is required!"}), 400
+    if not message_content:
+        return jsonify({"status": "Message content is required!"}), 400
+
     message = sender_instance.create_message(message_content, receiver_email)
     if not message:
         return jsonify({"status": "Failed to create message!"}), 500
-    if not receiver_email:
-        return jsonify({"status": "empty receiver_name!"}), 500
 
     stored_messages[receiver_email.lower()] = (
         message.get_encrypted_content(),
@@ -88,26 +88,28 @@ def send_message():
     return jsonify({"status": "Message sent and stored successfully!"}), 200
 
 
-
 @app.route('/server', methods=['POST'])
 def server_messages():
     try:
         data = request.get_json()
-        receiver_email = data.get("receiver_email").lower()
+        receiver_email = data.get("receiver_email")
+
+        if not receiver_email:
+            return jsonify({"status": "Receiver email is required"}), 400
+
+        receiver_email = receiver_email.lower()
 
         message, signature, encrypted_receiver = stored_messages[receiver_email]
-
         encrypted_receiver = base64.b64decode(encrypted_receiver)
 
         server_success = server_instance.receive_message(
-            message, signature, encrypted_receiver,  sender_instance.encryptor
+            message, signature, encrypted_receiver, sender_instance.encryptor
         )
 
         if server_success:
-            forwarded = server_instance.forward_message(receiver_instance,  sender_instance.encryptor)
+            forwarded = server_instance.forward_message(receiver_instance, sender_instance.encryptor)
             if forwarded:
                 return jsonify({"status": receiver_instance.get_received_messages()}), 200
-
             else:
                 return jsonify({"status": "Failed to forward message to receiver!"}), 500
         else:
@@ -117,14 +119,12 @@ def server_messages():
         return jsonify({"error": str(e)}), 500
 
 
-
-
 if __name__ == "__main__":
     http_server = WSGIServer(
         ('0.0.0.0', 5000),
         app,
-        keyfile=r"D:\aa\Software-Project_new\ssl6\private.key",
-        certfile=r"D:\aa\Software-Project_new\ssl6\cert.crt"
+        keyfile=r"D:\Software-Project\ssl6\private.key",
+        certfile=r"D:\Software-Project\ssl6\cert.crt"
     )
     try:
         print("Starting server...")

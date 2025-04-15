@@ -15,7 +15,7 @@ class Server:
         self.db = functions_DB()
 
     def receive_message(self, message, signature, receiver_name, encryptor):
-        self.receive_info=encryptor
+        self.receive_info = encryptor
         decrypted_receiver = self.receive_info.decrypt(receiver_name)
 
         if not self.db.receiver_exists(decrypted_receiver):
@@ -31,29 +31,33 @@ class Server:
             return False
 
     def forward_message(self, receiver_instance, encryptor) -> bool:
-        self.receive_info=encryptor
+        self.receive_info = encryptor
         if not self.messages_queue.empty():
             message_data = self.messages_queue.get()
-            message = message_data[0]  
-            signature = message_data[1] 
-            receiver_name = message_data[2] 
+            encrypted_message = message_data[0]         # ده لازم يكون bytes
+            signature = message_data[1]
+            receiver_name = message_data[2]
 
-            receiver_url = "https://192.168.1.6:5000/receive"
-            payload = {
-                "encrypted_content": base64.b64encode(message).decode(),
-                "sender_signature": base64.b64encode(signature).decode(),
-                "receiver_name": receiver_name
-            }
+            try:
+                # تجهيز البيانات لإرسالها للسيرفر
+                payload = {
+                    "encrypted_content": base64.b64encode(encrypted_message).decode(),
+                    "signature": signature,
+                    "receiver_username": receiver_name
+                }
 
-            response = self.protocol.sendData(receiver_url, payload)
-            if response:
-                print(f"[Server] Forwarding message done!")
-                if receiver_instance.receiveMessage(message, receiver_name, signature, encryptor):
+                print("[Server] Forwarding message to receiver...")
+
+                # تجربة تمرير الرسالة لراسيڤر داخلياً (وليس URL حقيقي لأن المشروع داخلي)
+                if receiver_instance.receive_message(payload, encryptor):
+                    print(f"[Server] Message forwarded and received successfully.")
                     return True
                 else:
+                    print("[Server] Receiver failed to process the message.")
                     return False
-            else:
-                print("[Server] Failed to forward message.")
+
+            except Exception as e:
+                print(f"[Server] Error during message forwarding: {e}")
                 return False
         else:
             print("[Server] No messages to forward.")
