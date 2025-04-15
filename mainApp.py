@@ -44,7 +44,7 @@ def main():
     if server.receive_message():
         print("[Server] Message received securely.")
 
-        # ✅ Fix: instantiate the receiver before forwarding
+       
         receiver_instance = receiver()
         if server.forward_message(receiver_instance,encryptor):
             print(f"[Server] Message forwarded to {receiver_username} successfully.")
@@ -56,3 +56,6 @@ def main():
 if __name__ == "__main__":
     main()
     # hagerSamy$234
+    #samy@gmail.com
+    #StrongPass123!
+    #hagar@gmail.com

@@ -4,6 +4,7 @@ from Sender import sender
 from RSAEncryption import RSAEncryptor
 from Receiverinfocryptor import Receiverinfo
 import base64
+from functions_for_database import functions_DB 
 
 class Server:
     def __init__(self, protocol: SecureProtocol, sender_instance: sender, receiver_info: Receiverinfo):
@@ -11,30 +12,33 @@ class Server:
         self.sender = sender_instance
         self.messages_queue = Queue()
         self.receive_info = receiver_info
-    def receive_message(self) -> bool:
-        encryptor, message, signature, receiver_name = self.sender.send_message()
-        if not encryptor or not message or not signature or not receiver_name:
-            print("No data to receive.")
+        self.db = functions_DB()
+
+    def receive_message(self, message, signature, receiver_name, encryptor):
+        self.receive_info=encryptor
+        decrypted_receiver = self.receive_info.decrypt(receiver_name)
+
+        if not self.db.receiver_exists(decrypted_receiver):
+            print(f"[Server] Receiver '{decrypted_receiver}' not found in database.")
             return False
 
-        decrypted_receiver = self.receive_info.decryptReceiverInfo(receiver_name)
         if encryptor.verifySignature(decrypted_receiver, signature, self.sender.getPublicKey()):
             print("[Server] Receiving message...")
             self.messages_queue.put((message, signature, receiver_name))
             return True
         else:
-            print("❌ Signature not valid.")
+            print(" Signature not valid.")
             return False
 
     def forward_message(self, receiver_instance, encryptor) -> bool:
+        self.receive_info=encryptor
         if not self.messages_queue.empty():
-            # فك تجميع القيم بشكل صحيح
             message_data = self.messages_queue.get()
-            message = message_data[0]  # الرسالة المشفرة
-            signature = message_data[1]  # التوقيع
-            receiver_name = message_data[2]  # اسم المستلم
+            message = message_data[0]  
+            signature = message_data[1] 
+            receiver_name = message_data[2] 
 
-            receiver_url = "https://192.168.1.14:5000/receive"
+            receiver_url = "https://192.168.1.6:5000/receive"
             payload = {
                 "encrypted_content": base64.b64encode(message).decode(),
                 "sender_signature": base64.b64encode(signature).decode(),
@@ -43,9 +47,11 @@ class Server:
 
             response = self.protocol.sendData(receiver_url, payload)
             if response:
-                decrypted_receiver = self.receive_info.decryptReceiverInfo(receiver_name)
-                print(f"[Server] Forwarding message to {decrypted_receiver}")
-                return receiver_instance.receiveMessage(message, receiver_name, signature, encryptor)
+                print(f"[Server] Forwarding message done!")
+                if receiver_instance.receiveMessage(message, receiver_name, signature, encryptor):
+                    return True
+                else:
+                    return False
             else:
                 print("[Server] Failed to forward message.")
                 return False

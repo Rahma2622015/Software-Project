@@ -10,11 +10,11 @@ class receiver:
             decrypted_receiver = encryptor.decrypt(receiver_name)
         if encryptor.verifySignature(decrypted_receiver, signature, encryptor.public_key):
             print(f"[Receiver]Message successfully verified.")
-            self.received_messages.append({'receiver': receiver_name, 'message': decrypted_message})
+            self.received_messages.append({'Receiver_email': decrypted_receiver, 'Message': decrypted_message})
             return True
         else:
-            print("❌ Signature not valid. Message discarded.")
+            print("Signature not valid. Message discarded.")
             return False
 
     def get_received_messages(self):
-        return self.received_messages
+        return self.received_messages[-1]

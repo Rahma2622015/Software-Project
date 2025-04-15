@@ -16,7 +16,6 @@ class SecureProtocol(ProtocolInterface):
             return False
 
         try:
-            response = requests.post(url, data=data, verify="D:/Software-Project/cert.crt")
             print(f" Data sent securely to {url}")
             return True
         except requests.exceptions.SSLError:
